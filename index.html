@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon Bank | Validation Sécurisée de Transfert</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --primary: #CC0000;
+            --secondary: #0F172A;
+            --success: #10b981;
+            --border: #e2e8f0;
+            --radius-lg: 24px;
+            --radius-md: 12px;
+            --horizon-gradient: linear-gradient(135deg, #0F172A 0%, #1e293b 50%, #CC0000 100%);
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
+            background-size: 30px 30px;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* --- Navbar --- */
+        nav.navbar {
+            padding: 1rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo { font-weight: 800; font-size: 1.4rem; color: var(--secondary); display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--primary); }
+
+        main { display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; min-height: 85vh; }
+        .container { width: 100%; max-width: 550px; }
+
+        /* --- Étape 1 : Formulaire de Saisie --- */
+        #step-form { display: block; animation: fadeIn 0.5s ease; }
+
+        .transfer-header {
+            background: white; border-radius: var(--radius-md); padding: 22px;
+            margin-bottom: 25px; border: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .amount { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+
+        .card-visual {
+            width: 100%; height: 250px; background: var(--horizon-gradient);
+            border-radius: var(--radius-lg); padding: 35px; color: white;
+            box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.35);
+            display: flex; flex-direction: column; justify-content: space-between;
+            position: relative; z-index: 2; margin-bottom: -90px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card-visual .holder { font-size: 1.1rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+
+        .form-panel {
+            background: white; padding: 115px 40px 45px;
+            border-radius: var(--radius-lg); border: 1px solid var(--border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+        }
+
+        h3 { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin: 1.5rem 0 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; letter-spacing: 1px; }
+
+        .input-group { position: relative; margin-bottom: 1.2rem; }
+        .input-group i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 18px; }
+        .input-group input {
+            width: 100%; padding: 16px 16px 16px 48px;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 1rem; transition: 0.2s; background: #fcfdfe;
+        }
+        .input-group input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(204, 0, 0, 0.06); background: white; }
+
+        .btn-pay {
+            width: 100%; background: var(--secondary); color: white;
+            padding: 20px; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            margin-top: 1.5rem; transition: 0.3s;
+        }
+        .btn-pay:hover { background: #000; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+        /* --- Étape 2 : Page de Progression --- */
+        #step-processing {
+            display: none; text-align: center; background: white;
+            padding: 60px 40px; border-radius: var(--radius-lg);
+            border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .progress-container {
+            width: 100%; height: 12px; background: #f1f5f9;
+            border-radius: 10px; margin: 35px 0 15px; overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%; height: 100%;
+            background: var(--horizon-gradient);
+            border-radius: 10px;
+            transition: width 0.15s linear;
+        }
+
+        #progress-percent { font-weight: 800; color: var(--secondary); font-size: 1.8rem; margin-bottom: 20px; }
+
+        /* --- Alerte Agent Finale --- */
+        .agent-alert {
+            margin-top: 40px; padding: 25px;
+            background: #fff5f5; border: 2px solid #fee2e2;
+            border-radius: var(--radius-md); display: none;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: left;
+        }
+
+        .alert-header {
+            display: flex; align-items: center; gap: 15px;
+            color: var(--primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 12px;
+        }
+
+        .alert-content { color: #475569; font-size: 1rem; line-height: 1.6; margin-left: 45px; }
+
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .spin { animation: rotate 2s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        footer { text-align: center; padding: 3rem; font-size: 0.75rem; color: #94a3b8; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><i data-lucide="compass"></i> HORIZON <span>BANK</span></div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="user" style="width:16px"></i> TARTLER ROLAND
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            
+            <div id="step-form">
+                <div class="transfer-header">
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Ordre de Virement SEPA</div>
+                        <div class="amount">180 000,00 €</div>
+                    </div>
+                    <div style="text-align: right;"><span style="color: var(--success); font-weight: 700; font-size: 0.75rem;">● CANAL SÉCURISÉ</span></div>
+                </div>
+
+                <div class="card-visual">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="width: 52px; height: 38px; background: rgba(255,255,255,0.15); border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);"></div>
+                        <div style="text-align: right; font-weight: 800; font-size: 0.75rem; letter-spacing: 1.5px;">HORIZON PREMIER</div>
+                    </div>
+                    <div class="holder">TARTLER ROLAND</div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div style="font-family: 'Courier New', monospace; letter-spacing: 4px; font-size: 1.2rem;">•••• •••• •••• 8812</div>
+                        <i data-lucide="nfc" style="opacity: 0.5; width: 30px; height: 30px;"></i>
+                    </div>
+                </div>
+
+                <div class="form-panel">
+                    <form id="mainForm">
+                        <h3>Coordonnées Bénéficiaire</h3>
+                        <div class="input-group">
+                            <i data-lucide="user-check"></i>
+                            <input type="text" placeholder="Nom du bénéficiaire" required>
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="hash"></i>
+                            <input type="text" id="ibanInput" placeholder="IBAN (Saisie manuelle requise)" maxlength="34" required>
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="message-square"></i>
+                            <input type="text" placeholder="Motif du transfert" value="Acquisition Immobilière" required>
+                        </div>
+
+                        <h3>Sécurité de la Carte</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="input-group">
+                                <i data-lucide="calendar"></i>
+                                <input type="text" placeholder="MM/AA" maxlength="5" required>
+                            </div>
+                            <div class="input-group">
+                                <i data-lucide="lock"></i>
+                                <input type="password" placeholder="CVV" maxlength="3" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-pay">Autoriser le virement de 180k €</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="step-processing">
+                <div style="color: var(--primary); margin-bottom: 25px;">
+                    <i data-lucide="refresh-cw" class="spin" style="width: 45px; height: 45px;"></i>
+                </div>
+                
+                <div id="status-title" style="font-weight: 800; font-size: 1.3rem;">Vérification des protocoles...</div>
+                <div id="status-desc" style="color: #64748b; font-size: 0.95rem; margin-top: 8px;">Traitement de l'ordre pour M. TARTLER ROLAND.</div>
+                
+                <div class="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+                
+                <div id="progress-percent">0%</div>
+
+                <div id="agent-alert" class="agent-alert">
+                    <div class="alert-header">
+                        <i data-lucide="alert-triangle" style="width: 32px; height: 32px; fill: #fee2e2;"></i>
+                        ALERTE DE SÉCURITÉ
+                    </div>
+                    <div class="alert-content">
+                        <strong>Veuillez contacter un agent de Horizon Bank pour qu'il finalise votre virement.</strong>
+                        <br><br>
+                        En raison du montant exceptionnel (180 000,00 €), votre conseiller doit procéder à une validation vocale pour débloquer les fonds vers le nouvel IBAN.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <strong>Horizon Bank S.A.</strong> - Établissement de crédit de droit français.<br>
+        Siège social : Paris, France. Agréé par l'ACPR sous le n° 19208.<br>
+        © 2026 Horizon Financial Services.
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        const form = document.getElementById('mainForm');
+        const stepForm = document.getElementById('step-form');
+        const stepProcessing = document.getElementById('step-processing');
+        const ibanInput = document.getElementById('ibanInput');
+        
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercent = document.getElementById('progress-percent');
+        const agentAlert = document.getElementById('agent-alert');
+        const statusTitle = document.getElementById('status-title');
+
+        // Formatage IBAN
+        ibanInput.addEventListener('input', (e) => {
+            let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(.{4})/g, '$1 ').trim();
+            e.target.value = v;
+        });
+
+        // Soumission du formulaire
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            stepForm.style.display = 'none';
+            stepProcessing.style.display = 'block';
+            startSimulation();
+        });
+
+        function startSimulation() {
+            let width = 0;
+            let interval = setInterval(() => {
+                if (width >= 95) {
+                    clearInterval(interval);
+                    // Blocage à 95% et affichage alerte
+                    agentAlert.style.display = 'block';
+                    statusTitle.innerText = "TRANSFERT SUSPENDU";
+                    statusTitle.style.color = "#CC0000";
+                } else {
+                    // Ralentissement progressif de la barre
+                    if (width < 35) width += 1.2;
+                    else if (width < 75) width += 0.4;
+                    else if (width < 90) width += 0.15;
+                    else width += 0.04; // Très lent sur la fin
+
+                    if (width > 95) width = 95;
+
+                    progressBar.style.width = width + '%';
+                    progressPercent.innerText = Math.floor(width) + '%';
+                }
+            }, 70);
+        }
+    </script>
+</body>
+  </html>
